@@ -7,6 +7,9 @@ import { Avatar } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import Image from 'next/image'
 
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+
 
 // Definir los tipos de preguntas y sus inputs correspondientes
 type InputType = "text" | "number" | "textarea" | "email" | "tel" | "date" | "select"
@@ -34,7 +37,7 @@ export default function ChatWithWebhook() {
     setMessages([
       {
         id: "welcome",
-        text: "Hola! 😊 Completa este breve form para conocer mejor tu caso y negocio, y aplicar para que te ayudemos a posicionar y escalar tu Marca Personal🚀   Si vemos que podemos ayudarte, mi equipo te contactará para contarte los próximos pasos.✨   PD: Sólo podremos plantear tu plan de acción, si llegas hasta el final. Por ello, no abandones esta ventana hasta completar el proceso.  ",
+        text: "Hola! 😊 Completa este breve form para conocer mejor tu caso y negocio, y aplicar para que te ayudemos a posicionar y escalar tu Marca Personal🚀   Si vemos que podemos ayudarte, mi equipo te contactará para contarte los próximos pasos.✨   PD: Sólo podremos plantear tu plan de acción, si llegas hasta el final. Por ello, no abandones esta ventana hasta completar el proceso. ¿Lista? Primero, cuéntame tu nombre👇🏼",
         isUser: false,
         inputType: "text",
       },
@@ -113,7 +116,7 @@ export default function ChatWithWebhook() {
       email: [/correo electr[óo]nico/i, /\bemail\b/i, /\be-mail\b/i, /direcci[óo]n de correo electr[óo]nico/i, /\bcorreo\b/i],
       number: [/edad/i, /a[ñn]os/i, /n[úu]mero/i, /cantidad/i, /cu[áa]ntos/i, /precio/i, /valor/i],
       tel: [/tel[ée]fono/i, /celular/i, /m[óo]vil/i, /contacto/i, /número de WhatsApp/i],
-      date: [/fecha/i, /d[íi]a/i, /cu[áa]ndo/i, /calendario/i],
+      // date: [/fecha/i, /d[íi]a/i, /cu[áa]ndo/i, /calendario/i],
       textarea: [/describe/i, /cu[ée]ntanos/i, /explica/i, /detalla/i, /comentarios/i, /opini[óo]n/i],
       select: [/selecciona/i, /elige/i, /opciones/i, /alternativas/i, /escoge/i, /opci[óo]n/i],
     }
@@ -202,6 +205,21 @@ export default function ChatWithWebhook() {
     setInputValue("")
   }
 
+  const handleOptionClick = (option: string) => {
+    // Agregar el mensaje del usuario a la lista
+    const userMessage: Message = {
+      id: `user-${crypto.randomUUID()}`,
+      text: option,
+      isUser: true,
+    }
+  
+    setMessages((prev) => [...prev, userMessage])
+  
+    // Enviar el mensaje al webhook
+    sendMessage(option)
+  }
+  
+
   // Renderizar el tipo de input adecuado
   const renderInput = () => {
     switch (currentInputType) {
@@ -218,21 +236,18 @@ export default function ChatWithWebhook() {
         )
       case "select":
         return (
-          <select
-            className="w-full flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="" disabled>
-              Selecciona una opción
-            </option>
-            {currentOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <div className=" px-4 pb-2 z-10 bg-white flex flex-wrap items-center justify-center gap-2">
+          {currentOptions.map((option) => (
+            <button
+              key={option}
+              className="px-4 py-2 bg-[#2383A2] text-white rounded-md hover:bg-[#b4dbd7] transition"
+              onClick={() => handleOptionClick(option)}
+              disabled={isLoading}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
         )
       case "email":
         return (
@@ -259,13 +274,15 @@ export default function ChatWithWebhook() {
         )
       case "tel":
         return (
-          <input
-            type="tel"
-            className="flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+            <PhoneInput
+            className="flex-1 rounded-lg border border-none focus:outline-none focus:ring-2 focus:ring-primary"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => setInputValue(e)}
             placeholder={currentPlaceholder}
             disabled={isLoading}
+            country={'ar'}
+            enableSearch={true}
+
           />
         )
       case "date":
@@ -299,11 +316,12 @@ export default function ChatWithWebhook() {
         <div className="bg-white rounded-xl shadow-md">
           <Image src={"logo.jfif"} alt="" width={200} height={200} className="w-full p-4 rounded-xl"></Image>
         </div>
+
       </div>
 
       {/* Chat container */}
       <div className="flex-1 max-w-3xl w-full mx-auto p-4">
-        <Card className="bg-white rounded-xl shadow-md p-6 mb-4 min-h-[60vh] flex flex-col">
+        <Card className="relative bg-white rounded-xl shadow-md p-6 mb-4 min-h-[60vh] flex flex-col ">
           <div className="space-y-4 mb-4 flex-grow overflow-y-auto">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
@@ -316,7 +334,7 @@ export default function ChatWithWebhook() {
                   className={`max-w-[80%] p-3 rounded-lg ${message.isUser ? "bg-[#FFC969] text-[#545454]" : "bg-[#F89082] "
                     }`}
                 >
-                  {message.text}
+                  {message.inputType === "select" ? message.text.split("?")[0] + "?" : message.text}
                 </div>
               </div>
             ))}
