@@ -16,6 +16,17 @@ export async function POST(req: Request) {
       }),
     })
 
+    await fetch("https://neuralgeniusai.com/webhook/fabimersan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user: "Usuario",
+        message: "[RESET]", // Mensaje especial para reiniciar el flujo
+      }),
+    })
+
     if (!response.ok) {
       throw new Error("Error al conectar con el Webhook")
     }
@@ -49,5 +60,9 @@ export async function POST(req: Request) {
     console.error("Error al enviar al Webhook:", error)
     return NextResponse.json({ reply: "Hubo un error al procesar tu solicitud." }, { status: 500 })
   }
+
+
+
 }
+
 

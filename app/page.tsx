@@ -31,13 +31,21 @@ export default function ChatWithWebhook() {
   const [currentOptions, setCurrentOptions] = useState<string[]>([])
   const [currentPlaceholder, setCurrentPlaceholder] = useState("Escribe un mensaje...")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isChatEnded, setIsChatEnded] = useState(false)
+
 
   // Iniciar el chat con un mensaje de bienvenida
   useEffect(() => {
     setMessages([
       {
         id: "welcome",
-        text: "Hola! 😊 Completa este breve form para conocer mejor tu caso y negocio, y aplicar para que te ayudemos a posicionar y escalar tu Marca Personal🚀   Si vemos que podemos ayudarte, mi equipo te contactará para contarte los próximos pasos.✨   PD: Sólo podremos plantear tu plan de acción, si llegas hasta el final. Por ello, no abandones esta ventana hasta completar el proceso. ¿Lista? Primero, cuéntame tu nombre👇🏼",
+        text: "Hola! 😊 Completa este breve form para conocer mejor tu caso y negocio, y aplicar para que te ayudemos a posicionar y escalar tu Marca Personal🚀   Si vemos que podemos ayudarte, mi equipo te contactará para contarte los próximos pasos.✨   PD: Sólo podremos plantear tu plan de acción, si llegas hasta el final. Por ello, no abandones esta ventana hasta completar el proceso.",
+        isUser: false,
+        inputType: "text",
+      },
+      {
+        id: "nombre",
+        text: "¿Lista? Primero, cuéntame tu nombre👇🏼",
         isUser: false,
         inputType: "text",
       },
@@ -85,6 +93,11 @@ export default function ChatWithWebhook() {
         },
       ])
 
+      // Si el mensaje del bot contiene "gracias", finaliza el chat
+if (data.reply.toLowerCase().includes("gracias")) {
+  setIsChatEnded(true)
+}
+
       // Actualizar el tipo de input para la próxima interacción
       setCurrentInputType(nextInputInfo.inputType)
       setCurrentOptions(nextInputInfo.options || [])
@@ -117,7 +130,7 @@ export default function ChatWithWebhook() {
       number: [/edad/i, /a[ñn]os/i, /n[úu]mero/i, /cantidad/i, /cu[áa]ntos/i, /precio/i, /valor/i],
       tel: [/tel[ée]fono/i, /celular/i, /m[óo]vil/i, /contacto/i, /número de WhatsApp/i],
       // date: [/fecha/i, /d[íi]a/i, /cu[áa]ndo/i, /calendario/i],
-      textarea: [/describe/i, /cu[ée]ntanos/i, /explica/i, /detalla/i, /comentarios/i, /opini[óo]n/i],
+      // textarea: [/describe/i, /cu[ée]ntanos/i, /explica/i, /detalla/i, /comentarios/i, /opini[óo]n/i],
       select: [/selecciona/i, /elige/i, /opciones/i, /alternativas/i, /escoge/i, /opci[óo]n/i],
     }
 
@@ -236,11 +249,11 @@ export default function ChatWithWebhook() {
         )
       case "select":
         return (
-          <div className=" px-4 pb-2 z-10 bg-white flex flex-wrap items-center justify-center gap-2">
+          <div className=" px-4 pb-2 z-10 bg-white flex flex-wrap items-center gap-2">
           {currentOptions.map((option) => (
             <button
               key={option}
-              className="px-4 py-2 bg-[#2383A2] text-white rounded-md hover:bg-[#b4dbd7] transition"
+              className="px-4 py-2 bg-[#2383A2] text-white rounded-md hover:bg-[#b4dbd7] transition text-left"
               onClick={() => handleOptionClick(option)}
               disabled={isLoading}
             >
@@ -275,7 +288,8 @@ export default function ChatWithWebhook() {
       case "tel":
         return (
             <PhoneInput
-            className="flex-1 rounded-lg border border-none focus:outline-none focus:ring-2 focus:ring-primary"
+            containerClass="flex-1"
+            inputClass="rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-primary"
             value={inputValue}
             onChange={(e) => setInputValue(e)}
             placeholder={currentPlaceholder}
@@ -304,7 +318,7 @@ export default function ChatWithWebhook() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={currentPlaceholder}
-            disabled={isLoading}
+            disabled={isLoading || isChatEnded}
           />
         )
     }
@@ -372,7 +386,7 @@ export default function ChatWithWebhook() {
             {renderInput()}
             <Button
               onClick={handleSubmit}
-              className="bg-[#b4dbd7] hover:bg-[#2383A2] p-6"
+              className="bg-[#48819b] hover:bg-[#2383A2] p-6"
               disabled={!inputValue.trim() || isLoading}
             >
               <Send className="h-6 w-5" />
