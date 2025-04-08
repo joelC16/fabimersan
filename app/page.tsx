@@ -94,9 +94,9 @@ export default function ChatWithWebhook() {
       ])
 
       // Si el mensaje del bot contiene "gracias", finaliza el chat
-if (data.reply.toLowerCase().includes("gracias")) {
-  setIsChatEnded(true)
-}
+      if (data.reply.toLowerCase().includes("gracias")) {
+        setIsChatEnded(true)
+      }
 
       // Actualizar el tipo de input para la próxima interacción
       setCurrentInputType(nextInputInfo.inputType)
@@ -218,6 +218,32 @@ if (data.reply.toLowerCase().includes("gracias")) {
     setInputValue("")
   }
 
+  const userId = `usuario-${Date.now()}`
+
+  useEffect(() => {
+    const resetFlujo = async () => {
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: userId,
+            message: "RESET",
+          }),
+        });
+  
+        const data = await res.json();
+        console.log("Reset desde API interna:", data);
+      } catch (err) {
+        console.error("Error al enviar el RESET desde API interna:", err);
+      }
+    };
+  
+    resetFlujo();
+  }, []);
+  
   const handleOptionClick = (option: string) => {
     // Agregar el mensaje del usuario a la lista
     const userMessage: Message = {
@@ -225,13 +251,13 @@ if (data.reply.toLowerCase().includes("gracias")) {
       text: option,
       isUser: true,
     }
-  
+
     setMessages((prev) => [...prev, userMessage])
-  
+
     // Enviar el mensaje al webhook
     sendMessage(option)
   }
-  
+
 
   // Renderizar el tipo de input adecuado
   const renderInput = () => {
@@ -250,17 +276,17 @@ if (data.reply.toLowerCase().includes("gracias")) {
       case "select":
         return (
           <div className=" px-4 pb-2 z-10 bg-white flex flex-wrap items-center gap-2">
-          {currentOptions.map((option) => (
-            <button
-              key={option}
-              className="px-4 py-2 bg-[#2383A2] text-white rounded-md hover:bg-[#b4dbd7] transition text-left"
-              onClick={() => handleOptionClick(option)}
-              disabled={isLoading}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+            {currentOptions.map((option) => (
+              <button
+                key={option}
+                className="px-4 py-2 bg-[#2383A2] text-white rounded-md hover:bg-[#b4dbd7] transition text-left"
+                onClick={() => handleOptionClick(option)}
+                disabled={isLoading}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
         )
       case "email":
         return (
@@ -287,7 +313,7 @@ if (data.reply.toLowerCase().includes("gracias")) {
         )
       case "tel":
         return (
-            <PhoneInput
+          <PhoneInput
             containerClass="flex-1"
             inputClass="rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-primary"
             value={inputValue}

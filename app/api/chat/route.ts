@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 
+const userId = `usuario-${Date.now()}`
+console.log("ID de usuario generado:", userId)
+
 export async function POST(req: Request) {
   try {
     const { message } = await req.json()
@@ -11,19 +14,8 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user: "Usuario",
+        user: userId,
         message: message,
-      }),
-    })
-
-    await fetch("https://neuralgeniusai.com/webhook/fabimersan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user: "Usuario",
-        message: "[RESET]", // Mensaje especial para reiniciar el flujo
       }),
     })
 
